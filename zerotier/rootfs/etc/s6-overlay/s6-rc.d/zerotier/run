@@ -8,7 +8,7 @@ declare -a options
 
 bashio::log.info "Starting ZeroTier One..."
 
-# Note sure what this does.
+# Skip the privilege check and do not attempt to drop privileges
 options+=(-U)
 options+=("-p$(bashio::app.port 9993)")
 

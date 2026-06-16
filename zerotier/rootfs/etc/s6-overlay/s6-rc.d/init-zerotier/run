@@ -2,7 +2,7 @@
 # shellcheck shell=bash
 # ==============================================================================
 # Home Assistant Community App: ZeroTier One
-# Generates an identiy in case it does not exists yet
+# Generates an identity in case it does not exist yet
 # ==============================================================================
 readonly private='/ssl/zerotier/identity.secret'
 readonly public='/ssl/zerotier/identity.public'
@@ -18,12 +18,12 @@ then
 
     if bashio::fs.file_exists "${private}"; then
         rm -f "${private}" \
-            || bashio::exit.nok "Failed to delete old private identify file"
+            || bashio::exit.nok "Failed to delete old private identity file"
     fi
 
     if bashio::fs.file_exists "${public}"; then
         rm -f "${public}" \
-            || bashio::exit.nok "Failed to delete old private identify file"
+            || bashio::exit.nok "Failed to delete old public identity file"
     fi
 
     if ! bashio::fs.directory_exists '/ssl/zerotier'; then
@@ -50,7 +50,7 @@ fi
 mkdir -p "/var/lib/zerotier-one/networks.d" \
     || bashio::exit.nok "Could not create networks folder"
 
-# Install user configured/requested packages
+# Configure the user requested networks
 if bashio::config.has_value 'networks'; then
     while read -r network; do
         bashio::log.info "Configuring network: ${network}"
