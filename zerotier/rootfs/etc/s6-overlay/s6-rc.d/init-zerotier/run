@@ -10,6 +10,9 @@ declare network
 declare node
 declare token
 
+# Set the log level based on the add-on configuration
+bashio::log.level "$(bashio::config 'log_level' 'info')"
+
 # Generate identity if it does not exist
 if ! bashio::fs.file_exists "${private}" \
     || ! bashio::fs.file_exists "${public}";
