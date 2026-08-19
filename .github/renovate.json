@@ -28,12 +28,12 @@
       "managerFilePatterns": ["//Dockerfile$/"],
       "matchStringsStrategy": "any",
       "matchStrings": [
-        "\\s\\s(?<package>[a-z0-9-]+)=(?<currentValue>[a-z0-9-_.]+)\\s+"
+        "\\s\\s(?<package>[a-z0-9][a-z0-9._+-]*)=(?<currentValue>[a-z0-9-_.]+)\\s+"
       ],
       "versioningTemplate": "loose",
       "datasourceTemplate": "custom.alpine",
       "depNameTemplate": "alpine_3_24/{{package}}",
-      "extractVersionTemplate": "^{{{package}}}-(?<version>\\d.*)\\.apk$"
+      "extractVersionTemplate": "^{{{replace '\\.' '\\.' (replace '\\+' '%2B' package)}}}-(?<version>\\d.*)\\.apk$"
     },
     {
       "customType": "regex",
