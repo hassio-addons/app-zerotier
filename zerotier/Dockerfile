@@ -7,6 +7,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Setup base
 ARG ZERO_TIER_ONE_VERSION="1.16.2"
+ARG ZERONSD_VERSION="v0.5.2"
 # hadolint ignore=DL3003
 RUN \
     apk add --no-cache --virtual .build-dependencies \
@@ -15,11 +16,13 @@ RUN \
         git=2.54.0-r0 \
         linux-headers=7.0.0-r1 \
         openssl-dev=3.5.8-r0 \
+        rustfmt=1.96.1-r0 \
         pkgconf=2.5.1-r0 \
     \
     && apk add --no-cache \
         libgcc=15.2.0-r5 \
         libstdc++=15.2.0-r5 \
+        openssl=3.5.8-r0 \
     \
     && git clone --branch "${ZERO_TIER_ONE_VERSION}" --depth=1 \
         "https://github.com/zerotier/ZeroTierOne.git" /tmp/zerotier \
@@ -27,6 +30,12 @@ RUN \
     && cd /tmp/zerotier \
     && CARGO_NET_GIT_FETCH_WITH_CLI=true make \
     && make install \
+    \
+    && git clone --branch "${ZERONSD_VERSION}" --depth=1 \
+        https://github.com/zerotier/zeronsd.git /tmp/zeronsd \
+    && cd /tmp/zeronsd \
+    && RUSTFMT=/usr/bin/rustfmt cargo build --release --locked \
+    && install -m 0755 target/release/zeronsd /usr/bin/zeronsd \
     \
     && apk del --no-cache --purge .build-dependencies \
     && rm -f -r \

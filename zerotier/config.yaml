@@ -1,17 +1,21 @@
 ---
-name: ZeroTier One
-version: dev
+name: ZeroTier One with zeronsd
+version: 0.26.2-zeronsd.1
 slug: zerotier
-description: Radically simplify your network with a virtual networking layer that works the same everywhere
-url: https://github.com/hassio-addons/app-zerotier
+description: Radically simplify your network with a virtual networking layer and DNS for ZeroTier members
+url: https://github.com/airtonix/app-zerotier
 startup: services
 init: false
 arch:
   - aarch64
   - amd64
 ports:
+  53/tcp: 53
+  53/udp: 53
   9993/tcp: 9993
 ports_description:
+  53/tcp: zeronsd DNS over TCP
+  53/udp: zeronsd DNS over UDP
   9993/tcp: ZeroTier's primary port
 host_network: true
 privileged:
@@ -24,8 +28,22 @@ map:
 options:
   networks: []
   api_auth_token: ""
+  zeronsd:
+    enabled: false
+    network: ""
+    domain: home.arpa
+    wildcard: false
+    central_token: ""
+    log_level: info
 schema:
   networks:
     - str
   api_auth_token: str
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  zeronsd:
+    enabled: bool
+    network: str
+    domain: str
+    wildcard: bool
+    central_token: password
+    log_level: list(trace|debug|error|warn|info)?
