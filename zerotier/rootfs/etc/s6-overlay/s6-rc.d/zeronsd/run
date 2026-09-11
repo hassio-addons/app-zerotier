@@ -1,0 +1,86 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Community App: ZeroTier One with zeronsd
+# Runs the ZeroTier DNS resolver for one configured ZeroTier network.
+# ==============================================================================
+
+declare network
+
+declare domain
+
+declare central_token
+
+declare log_level
+
+declare -a options
+
+if [[ "$(bashio::config 'zeronsd.enabled')" != 'true' ]]; then
+    bashio::log.info 'zeronsd is disabled'
+    exec sleep infinity
+fi
+
+network=$(bashio::config 'zeronsd.network')
+if [[ -z "${network}" ]]; then
+    network=$(bashio::config 'networks[0]')
+fi
+if [[ -z "${network}" ]]; then
+    bashio::exit.nok 'zeronsd requires a ZeroTier network'
+fi
+
+domain=$(bashio::config 'zeronsd.domain')
+central_token=$(bashio::config 'zeronsd.central_token')
+if [[ -z "${central_token}" ]]; then
+    bashio::exit.nok 'zeronsd requires a ZeroTier Central token'
+fi
+
+if [[ -z "$(bashio::config 'api_auth_token')" ]]; then
+    bashio::exit.nok 'zeronsd requires api_auth_token for the local ZeroTier API'
+fi
+
+if [[ -z "${domain}" ]]; then
+    bashio::exit.nok 'zeronsd requires a DNS domain'
+fi
+
+if ! printf '%s\n' "$(bashio::config 'networks')" \
+    | grep -Fqx -- "${network}"; then
+    bashio::exit.nok "zeronsd network ${network} is not configured in networks"
+fi
+
+mkdir -p /run/zeronsd
+printf '%s' "${central_token}" > /run/zeronsd/central-token
+chmod 600 /run/zeronsd/central-token
+
+bashio::log.info "Waiting for ZeroTier network ${network}..."
+for _ in {1..60}; do
+    if zerotier-cli listnetworks 2>/dev/null \
+        | awk -v network="${network}" '$1 == network && $0 ~ /(^| )OK( |$)/ { found=1 } END { exit !found }'; then
+        break
+    fi
+    sleep 2
+done
+
+if ! zerotier-cli listnetworks 2>/dev/null \
+    | awk -v network="${network}" '$1 == network && $0 ~ /(^| )OK( |$)/ { found=1 } END { exit !found }'; then
+    bashio::exit.nok "ZeroTier network ${network} did not become ready"
+fi
+
+options=(
+    start
+    -s /var/lib/zerotier-one/authtoken.secret
+    -t /run/zeronsd/central-token
+    -d "${domain}"
+)
+
+if [[ "$(bashio::config 'zeronsd.wildcard')" == 'true' ]]; then
+    options+=(-w)
+fi
+
+log_level=$(bashio::config 'zeronsd.log_level')
+if [[ -n "${log_level}" ]]; then
+    options+=(--log-level "${log_level}")
+fi
+
+options+=("${network}")
+bashio::log.info "Starting zeronsd for ${network} on ${domain}"
+exec zeronsd "${options[@]}"

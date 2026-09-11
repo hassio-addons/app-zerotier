@@ -1,0 +1,3 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+sleep 5
