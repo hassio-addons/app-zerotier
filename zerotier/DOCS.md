@@ -37,9 +37,47 @@ networks:
   - wgfyiwe73747457
   - fhu3888892jjfdk
 api_auth_token: ""
+zeronsd:
+  enabled: true
+  network: wgfyiwe73747457
+  domain: home.arpa
+  wildcard: false
+  central_token: ""
+  log_level: info
 ```
 
 **Note**: _This is just an example, don't copy and paste it! Create your own!_
+
+## ZeroTier DNS with zeronsd
+
+This fork can run [zeronsd][zeronsd] alongside ZeroTier One. It provides DNS
+records for members of one ZeroTier network and updates that network's DNS
+settings in ZeroTier Central.
+
+Enable it only when this host should provide DNS for the selected network:
+
+```yaml
+zeronsd:
+  enabled: true
+  network: wgfyiwe73747457
+  domain: home.arpa
+  wildcard: false
+  central_token: "!secret zerotier_central_token"
+  log_level: info
+```
+
+`network` must be a network listed in `networks`. If it is empty, the first
+entry in `networks` is used. The add-on supports one `zeronsd` instance. Use a
+separate instance for each separate ZeroTier network.
+
+`central_token` must be a ZeroTier Central API token that can read members and
+update DNS settings for the selected network. `zeronsd` also uses the local
+ZeroTier API token. Set `api_auth_token` to a persistent token when using this
+feature.
+
+The add-on listens on TCP and UDP port 53. Check that port 53 is not already
+used on the Home Assistant host. Clients must have DNS enabled for the
+ZeroTier network (`allowDNS=1`).
 
 ### Option: `log_level`
 
@@ -150,3 +188,4 @@ SOFTWARE.
 [releases]: https://github.com/hassio-addons/app-zerotier/releases
 [semver]: https://semver.org/spec/v2.0.0.html
 [zerotier]: https://www.zerotier.com/
+[zeronsd]: https://github.com/zerotier/zeronsd
