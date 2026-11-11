@@ -12,7 +12,7 @@ RUN \
     apk add --no-cache --virtual .build-dependencies \
         build-base=0.5-r4 \
         cargo=1.96.1-r0 \
-        git=2.54.0-r0 \
+        git=2.54.1-r0 \
         linux-headers=7.0.0-r1 \
         openssl-dev=3.5.9-r0 \
         pkgconf=2.5.1-r0 \
